@@ -96,6 +96,24 @@
                                           (* 2.0 omega-k)))
                                       _omega-ks))
 
+          (define _universe #f)
+          (define/public (get-universe) _universe)
+          (define/public (set-universe new-universe)
+                         (when _universe
+                           (error "path already in a universe" this _universe))
+                         (set! _universe new-universe))
+          (define/public (clear-universe)
+                         (set! _universe #f))
+
+          (define _bead-indices #f)
+          (define/public (get-bead-indices) _bead-indices)
+          (define/public (set-bead-indices new-indices
+                                           #:override [do-override #f])
+                         (when (and _bead-indices
+                                    (not do-override))
+                           (error "bead indices already set" this))
+                         (set! _bead-indices new-indices))
+
           (define/public (initialize-momenta-to-temperature temperature)
                          (vector-map! (lambda (_ p) p)
                                       (get-ps)
