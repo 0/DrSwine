@@ -6,7 +6,9 @@
 (require (only-in srfi/26
                   cut))
 
-(provide apply-ff-to-paths
+(provide apply-ff-to-indices
+         apply-ff-to-paths
+         ff-harmonic-distance
          ff-harmonic-trap
          force-field%)
 
@@ -49,6 +51,15 @@
           (define/public (custom-write p)       (write (repr) p))
           (define/public (custom-display p)     (display (repr) p))))
 
+
+(define (apply-ff-to-indices ff indices
+                             #:scale [scaling 1.0]
+                             #:name [name #f])
+  (new force-field%
+       [f (apply ff indices)]
+       [affected-indices (apply set indices)]
+       [scaling scaling]
+       [name name]))
 
 (define (apply-ff-to-paths ff path
                            #:scale-all [scale-all #f]
@@ -97,4 +108,17 @@
          [energy (* 0.5 k (sqr dq))]
          [gradients (list (cons idx (* k dq)))]
          [fcs (list (cons idx k))])
+    (values energy gradients fcs)))
+
+
+; Harmonic distance potential for a pair of beads.
+(define (((ff-harmonic-distance k) idx1 idx2) u)
+  (let* ([q1 (send u get-position idx1)]
+         [q2 (send u get-position idx2)]
+         [dq (- q1 q2)]
+         [energy (* 0.5 k (sqr dq))]
+         [gradients (list (cons idx1 (* +1.0 k dq))
+                          (cons idx2 (* -1.0 k dq)))]
+         [fcs (list (cons idx1 k)
+                    (cons idx2 k))])
     (values energy gradients fcs)))
